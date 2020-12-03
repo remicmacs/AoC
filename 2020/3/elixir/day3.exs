@@ -11,29 +11,43 @@ defmodule Helpers do
 			|> Map.new
 	end
 
-	def step(grid, {start_i, start_j}) do
+	def slope_step(grid, {inc_i, inc_j}, {start_i, start_j}) do
 		width = map_size(grid[0])
 
-		end_i = start_i + 1
-		big_end_j = (start_j + 3)
+		end_i = start_i + inc_i
+		big_end_j = (start_j + inc_j)
 		end_j = rem( big_end_j, width)
+		# IO.inspect({end_i, end_j}, label: "{i,j}")
 
 		{{end_i, end_j}, grid[ end_i ][ end_j ]}
 	end
 
-	defp go_through_grid(grid, height, pos, count) do
+	def solve_slopes(grid) do
+		[
+			{1, 1},
+			{1, 3},
+			{1, 5},
+			{1, 7},
+			{2, 1}
+		]
+			|> Enum.map(&go_through_grid(&1, grid))
+			# |> IO.inspect
+			|> Enum.reduce(1, fn el, acc -> el * acc end)
+	end
+
+	defp go_through_grid({inc_i, _} = param, grid, height, pos, count) do
 		{row_index, _ } = pos
-		if row_index == height do
+		if row_index + inc_i >= height do
 			count
 		else
-			{pos, obstacle} = step(grid, pos)
+			{pos, obstacle} = slope_step(grid, param, pos)
 			count = if obstacle == "#", do: count + 1, else: count
-			go_through_grid(grid, height, pos, count)
+			go_through_grid(param, grid, height, pos, count)
 		end
 	end
-	def go_through_grid(grid) do
+	def go_through_grid(param, grid) do
 		height = map_size(grid)
-		go_through_grid(grid, height, {0,0}, 0)
+		go_through_grid(param, grid, height, {0,0}, 0)
 	end
 
 end
@@ -54,4 +68,5 @@ grid_in_indexed_map = grid_in_list
 # IO.inspect(Helpers.step(grid_in_indexed_map, {0, 0}))
 # IO.inspect(Helpers.step(grid_in_indexed_map, {1, 3}))
 
-IO.puts(Helpers.go_through_grid(grid_in_indexed_map))
+IO.puts(Helpers.go_through_grid({1,3}, grid_in_indexed_map))
+IO.puts(Helpers.solve_slopes(grid_in_indexed_map))
