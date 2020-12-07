@@ -54,6 +54,18 @@ defmodule Helpers do
 		end
 	end
 
+	def total_descendant_bags({:end, 0}, _map_ref), do: 0
+	def total_descendant_bags({color, bag_count}, map_ref) do
+		descendants_bags = map_ref[color]
+			|> Enum.map(&(total_descendant_bags(&1, map_ref)))
+			|> Enum.sum
+		# IO.inspect(color, label: "Computing descendants of ")
+		# IO.inspect(map_ref[color], label: "Descendants are")
+		# IO.inspect(descendants_bags, label: "descendants bags sums", charlists: :as_lists)
+
+		bag_count+ (bag_count * descendants_bags)
+	end
+
 	def parse_rule(rule) do
 		[container, contained] = String.split(rule, " contain ")
 		# Removing "bags" from container rule string
@@ -63,8 +75,6 @@ defmodule Helpers do
 			# Removing trailing dot
 			|> Enum.map(&(String.replace(&1, ".", "")))
 			|> Enum.map(&split_contained_rule/1)
-			|> Map.new
-			# |> IO.inspect
 		{String.to_atom(container), contained}
 	end
 
@@ -72,7 +82,6 @@ defmodule Helpers do
 		rules
 			|> Enum.map(&parse_rule/1)
 			|> Map.new
-
 	end
 
 	def rule_match?(map_ref, {container, contained}) do
@@ -81,13 +90,13 @@ defmodule Helpers do
 			# |> IO.inspect(label: "before removing")
 			|> Map.delete(container)
 			# |> IO.inspect(label: "remaining rules")
-		keys_to_investigate = Map.keys(contained)
-		current_level = :"shiny gold" in keys_to_investigate
+		colors_to_investigate = Enum.map(contained, fn {key, _} -> key end)
+		current_level = :"shiny gold" in colors_to_investigate
 			# |> IO.inspect
 		if map_size(map_ref) == 0 do
 			current_level
 		else
-			{investigate, _} = Map.split(map_ref, keys_to_investigate)
+			{investigate, _} = Map.split(map_ref, colors_to_investigate)
 			current_level or investigate
 				|> Enum.any?(&(rule_match?(map_without_current, &1)))
 		end
@@ -107,7 +116,12 @@ defmodule Helpers do
 	end
 
 	def process_pt2(file_name) do
-		file_name
+		rules = file_name
+			|> file_name_load
+			|> String.split("\n")
+			|> parse_rules
+			# |> IO.inspect
+		total_descendant_bags({:"shiny gold", 1}, rules) - 1
 	end
 end
 
