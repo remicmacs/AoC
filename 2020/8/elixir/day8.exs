@@ -44,11 +44,33 @@ defmodule Helpers do
 	end
 
 	def step(program, %{hist: hist, pos: pos, acc: acc} = _state) do
-		if pos in hist do
-			acc
+		if pos > map_size(program) - 1 do
+			{:end, acc}
 		else
-			{new_pos, new_acc} = exec(program, pos, acc)
-			step(program, %{hist: [pos | hist], pos: new_pos, acc: new_acc})
+			if pos in hist do
+				{:inf, acc}
+			else
+				{new_pos, new_acc} = exec(program, pos, acc)
+				step(program, %{hist: [pos | hist], pos: new_pos, acc: new_acc})
+			end
+		end
+	end
+
+	def try_transform(transform, program) do
+		{opcode, val} = program[transform]
+		new_op = case opcode do
+			"jmp" -> {"nop", val}
+			"nop" -> {"jmp", val}
+		end
+
+		modified_prog = %{program | transform => new_op}
+		step(modified_prog, %{hist: [], pos: 0, acc: 0})
+
+	end
+	def try_transforms([head | tail], program) do
+		case try_transform(head, program) do
+			{:end, acc} -> acc
+			{:inf, _acc} -> try_transforms(tail, program)
 		end
 	end
 
@@ -58,12 +80,7 @@ defmodule Helpers do
 		{opcode, arg}
 	end
 
-	def file_name_load(file_name) do
-		{:ok, file_contents} = File.read(file_name)
-		file_contents
-	end
-
-	def process_pt1(file_name) do
+	def parse_program(file_name) do
 		file_name
 			|> file_name_load
 			|> String.split("\n")
@@ -71,12 +88,31 @@ defmodule Helpers do
 			|> Enum.map(&op_parse/1)
 			|> Enum.with_index
 			|> Enum.reduce(%{}, fn {el, index}, acc -> Map.put(acc, index, el) end)
+	end
+
+	def find_potentials_transforms(program) do
+		program
+			|> Enum.filter(fn {_id, {opcode, _val}} -> opcode == "jmp" or opcode == "nop" end)
+			|> Enum.map(fn {id, _} -> id end)
+	end
+
+	def file_name_load(file_name) do
+		{:ok, file_contents} = File.read(file_name)
+		file_contents
+	end
+
+	def process_pt1(file_name) do
+		{:inf, res} = file_name
+			|> parse_program
 			|> step(%{hist: [], pos: 0, acc: 0})
+			res
 	end
 
 	def process_pt2(file_name) do
-		file_name
-			# |> IO.inspect
+		program = file_name
+			|> parse_program
+		transforms = find_potentials_transforms(program)
+		try_transforms(transforms, program)
 	end
 end
 
