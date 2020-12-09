@@ -46,7 +46,7 @@ defmodule Helpers do
 			|> Enum.map(fn [x, y | _] -> x + y end)
 	end
 
-	def check(numbers, preamble_len) do
+	def find_first_error(numbers, preamble_len) do
 		# Never should we hit this case
 		if (length(numbers) == preamble_len) do
 			nil
@@ -61,9 +61,26 @@ defmodule Helpers do
 				evaluated
 			else
 				next_numbers = Enum.slice(numbers, 1..-1)
-				check(next_numbers, preamble_len)
+				find_first_error(next_numbers, preamble_len)
 			end
 
+		end
+	end
+
+	def find_contiguous_set_sum_r([], _target), do: nil
+	def find_contiguous_set_sum_r(numbers, target) do
+		if Enum.sum(numbers) == target do
+			numbers
+		else
+			find_contiguous_set_sum_r(Enum.slice(numbers, 0..-2), target)
+		end
+	end
+
+	def find_contiguous_set_sum_l(numbers, target) do
+		set = find_contiguous_set_sum_r(numbers, target)
+		case set do
+			nil -> find_contiguous_set_sum_l(Enum.slice(numbers, 1..-1), target)
+			set -> set
 		end
 	end
 
@@ -83,21 +100,30 @@ defmodule Helpers do
 		file_name
 			|> file_name_load
 			|> parse_integers_list
-			|> check(preamble_len)
+			|> find_first_error(preamble_len)
 	end
 
-	def process_pt2(file_name, preamble_len) do
-		file_name
+	def process_pt2(file_name, target) do
+		contiguous_set = file_name
+			|> file_name_load
+			|> parse_integers_list
+			|> find_contiguous_set_sum_l(target)
+
+		min = Enum.min(contiguous_set)
+		max = Enum.max(contiguous_set)
+		min + max
 	end
 end
 
-[ in_file, preamble_len | _ ] = System.argv
+[ in_file, preamble_len, pt2_seed | _ ] = System.argv
 
 preamble_len = String.to_integer(preamble_len)
+pt2_seed = String.to_integer(pt2_seed)
+
 
 expected_file = String.replace(in_file, "in", "out")
 
 pt1 = &(Helpers.process_pt1(&1, preamble_len))
-pt2 = &(Helpers.process_pt2(&1, preamble_len))
+pt2 = &(Helpers.process_pt2(&1, pt2_seed))
 
 Run.check(in_file, expected_file, pt1, pt2)
