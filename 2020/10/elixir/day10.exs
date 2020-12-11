@@ -46,14 +46,31 @@ defmodule Helpers do
 			|> Enum.sort
 	end
 
-	def compute_diffs(chained_adapters) do
-		diffs = chained_adapters
-			|> Enum.chunk_every(2, 1, :discard)
-			# |> IO.inspect
-			|> Enum.map(fn [a,b] -> b - a end)
+	def compute_ones_and_threes(diffs) do
 		threes = Enum.count(diffs, fn x -> x == 3 end)
 		ones = Enum.count(diffs, fn x -> x == 1 end)
 		{ones, threes}
+	end
+
+	def compute_diffs(chained_adapters) do
+		chained_adapters
+			|> Enum.chunk_every(2, 1, :discard)
+			# |> IO.inspect
+			|> Enum.map(fn [a,b] -> b - a end)
+	end
+
+	def nb_possible_sequences(0), do: 0
+	def nb_possible_sequences(1), do: 1
+	def nb_possible_sequences(n_consecutive_ones) do
+		# IO.inspect(n_consecutive_ones)
+		1 + nb_possible_sequences(n_consecutive_ones - 1) + nb_possible_sequences(n_consecutive_ones - 2)
+	end
+
+	def count_one_one_sequence(diffs) do
+		diffs
+			|> Enum.chunk_every(2, 1, :discard)
+			|> IO.inspect
+			|> Enum.count(fn x -> x == [1, 1] end)
 	end
 
 	def process_pt1(file_name) do
@@ -63,11 +80,26 @@ defmodule Helpers do
 			|> Enum.map(&String.to_integer/1)
 			|> find_chain
 			|> compute_diffs
+			|> compute_ones_and_threes
 		ones * threes
 	end
 
 	def process_pt2(file_name) do
-		file_name
+		count = file_name
+			|> file_name_load
+			|> String.split("\n")
+			|> Enum.map(&String.to_integer/1)
+			|> find_chain
+			|> compute_diffs
+			|> IO.inspect
+			|> Enum.join("")
+			|> String.split("3")
+			|> IO.inspect
+			|> Enum.map(&String.length/1)
+			|> Enum.map(&nb_possible_sequences/1)
+			|> Enum.filter(fn x -> x != 0 end)
+			|> Enum.reduce(1, fn x, acc -> acc * x end)
+			# round(:math.pow(2,count))
 	end
 end
 
