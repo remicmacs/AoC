@@ -71,6 +71,21 @@ defmodule Helpers do
 	end
 	def do_l(state, 180), do: do_r(state, 180)
 
+	def do_n2({pos, {north, east}}, value), do: {pos, {north + value, east}}
+	def do_e2({pos, {north, east}}, value), do: {pos, {north, east + value}}
+	def do_s2({pos, {north, east}}, value), do: {pos, {north - value, east}}
+	def do_w2({pos, {north, east}}, value), do: {pos, {north, east - value}}
+	def do_f2({{north, east}, {north_f, east_f} = waypoint} = state, value) do
+		{{north + (value * north_f), east + (value * east_f)} , waypoint}
+	end
+
+	def do_r2({pos, {north, east}}, 270), do: {pos, {east, -north}}
+	def do_r2({pos, {north, east}}, 90), do: {pos, {-east, north}}
+	def do_r2({pos, {north, east}}, 180), do: {pos, {-north, -east}}
+
+	def do_l2(state, 270), do: do_r2(state, 90)
+	def do_l2(state, 90), do: do_r2(state, 270)
+	def do_l2(state, 180), do: do_r2(state, 180)
 
 	def step(state, []), do: state
 	def step(state, instructions) do
@@ -87,6 +102,23 @@ defmodule Helpers do
 			"F" -> do_f(state, value)
 		end
 		step(new_state, other_instructions)
+	end
+
+	def step2(state, []), do: state
+	def step2(state, instructions) do
+		# IO.inspect(state, label: "State")
+		[{op, value} = _curr_move | other_instructions] = instructions
+		# IO.inspect(_curr_move, label: "Applying")
+		new_state = case op do
+			"N" -> do_n2(state, value)
+			"E" -> do_e2(state, value)
+			"S" -> do_s2(state, value)
+			"W" -> do_w2(state, value)
+			"R" -> do_r2(state, value)
+			"L" -> do_l2(state, value)
+			"F" -> do_f2(state, value)
+		end
+		step2(new_state, other_instructions)
 	end
 
 	def parse_move(line) do
@@ -116,6 +148,12 @@ defmodule Helpers do
 	end
 
 	def process_pt2(file_name) do
+		moves = file_name
+			|> file_name_load
+			|> String.split("\n")
+			|> parse_moves
+		{{x, y}, _} = step2({{0, 0}, {1, 10}}, moves)
+		abs(x) + abs(y)
 	end
 end
 
