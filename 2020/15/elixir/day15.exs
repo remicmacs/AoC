@@ -44,15 +44,74 @@ defmodule Helpers do
 		find_new_nb_p(head, 0, tail)
 	end
 
+	def find_new_nb2(%{history: history, existing: existing}) do
+		[ref | _tail] = history
+		IO.inspect(ref, label: "ref")
+		# IO.inspect(tail, label: "history")
+		# IO.inspect(existing, label: "existing")
+		new_existing = Map.put(existing, ref, 0)
+		new_existing = for {k, v} <- new_existing, into: %{}, do: {k, v + 1}
+		if ref in Map.keys(existing) do
+			value = existing[ref]
+			{value, %{history: [value | history], existing: new_existing}}
+		else
+			{0, %{history: [0 | history], existing: new_existing}}
+		end
+	end
+
 	def sequence(2020, history), do: find_new_nb(history)
 	def sequence(step_nb, history) do
 		sequence(step_nb + 1, [find_new_nb(history) | history])
+	end
+
+
+	def sequence1_2(2020, state) do
+		{new_nb, _} = find_new_nb2(state)
+		new_nb
+	end
+	def sequence1_2(step_nb, state) do
+		{_new_nb, new_state} = find_new_nb2(state)
+		sequence1_2(step_nb + 1, new_state)
+	end
+
+
+
+	def sequence2(30, state) do
+		{new_nb, _} = find_new_nb2(state)
+		new_nb
+	end
+	def sequence2(step_nb, state) do
+		if rem(step_nb, 10000) == 0 do
+			IO.inspect(step_nb, label: "Step")
+		end
+		{_new_nb, new_state} = find_new_nb2(state)
+		sequence2(step_nb + 1, new_state)
 	end
 
 	def do_sequence(seed) do
 		history = Enum.reverse(seed)
 		sequence(length(seed) + 1, history)
 	end
+
+	def do_sequence1_2(seed) do
+		history = Enum.reverse(seed)
+		[_hd | tail] = history
+
+		existing = tail
+			|> Enum.with_index
+			|> Enum.reduce(%{}, fn {nb, id}, acc -> Map.put(acc, nb, id + 1) end)
+		sequence1_2(length(seed) + 1, %{history: history, existing: existing})
+	end
+
+	def do_sequence2(seed) do
+		history = Enum.reverse(seed)
+		[_hd | tail] = history
+
+		existing = tail
+			|> Enum.reduce(%{}, fn {nb, id}, acc -> Map.put(acc, nb, id + 1) end)
+		sequence2(length(seed) + 1, %{history: history, existing: existing})
+	end
+
 
 	def string_to_ints(file_contents) do
 		file_contents
@@ -69,12 +128,15 @@ defmodule Helpers do
 		file_name
 			|> file_name_load
 			|> string_to_ints
-			|> do_sequence
+			|> do_sequence1_2
 
 	end
 
 	def process_pt2(file_name) do
 		file_name
+			|> file_name_load
+			|> string_to_ints
+			|> do_sequence2
 	end
 end
 
