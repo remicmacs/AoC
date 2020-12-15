@@ -44,19 +44,21 @@ defmodule Helpers do
 		find_new_nb_p(head, 0, tail)
 	end
 
-	def find_new_nb2(%{history: history, existing: existing}) do
-		[ref | _tail] = history
-		IO.inspect(ref, label: "ref")
-		# IO.inspect(tail, label: "history")
+	def find_new_nb2(%{history: history, existing: existing, index: index, target: target}) do
+		ref = history
+		# IO.inspect(ref, label: "ref")
+		# IO.inspect(index, label: "index")
+		# IO.inspect(history, label: "history")
 		# IO.inspect(existing, label: "existing")
-		new_existing = Map.put(existing, ref, 0)
-		new_existing = for {k, v} <- new_existing, into: %{}, do: {k, v + 1}
-		if ref in Map.keys(existing) do
-			value = existing[ref]
-			{value, %{history: [value | history], existing: new_existing}}
+
+		past_index = Map.get(existing, ref)
+		value = if past_index != nil do
+			index - past_index
 		else
-			{0, %{history: [0 | history], existing: new_existing}}
+			0
 		end
+		new_existing = Map.put(existing, ref, index)
+		%{history: value , existing: new_existing, index: index + 1, target: target}
 	end
 
 	def sequence(2020, history), do: find_new_nb(history)
@@ -64,28 +66,16 @@ defmodule Helpers do
 		sequence(step_nb + 1, [find_new_nb(history) | history])
 	end
 
-
-	def sequence1_2(2020, state) do
-		{new_nb, _} = find_new_nb2(state)
-		new_nb
-	end
-	def sequence1_2(step_nb, state) do
-		{_new_nb, new_state} = find_new_nb2(state)
-		sequence1_2(step_nb + 1, new_state)
-	end
-
-
-
-	def sequence2(30, state) do
-		{new_nb, _} = find_new_nb2(state)
-		new_nb
-	end
-	def sequence2(step_nb, state) do
-		if rem(step_nb, 10000) == 0 do
-			IO.inspect(step_nb, label: "Step")
+	def sequence2(%{index: step_nb} = state) do
+		# if rem(step_nb, 100000) == 0 do
+		# 	IO.inspect(step_nb, label: "Step")
+		# end
+		new_state = find_new_nb2(state)
+		if state.index == state.target - 1 do
+			state.history
+		else
+			sequence2(new_state)
 		end
-		{_new_nb, new_state} = find_new_nb2(state)
-		sequence2(step_nb + 1, new_state)
 	end
 
 	def do_sequence(seed) do
@@ -95,21 +85,22 @@ defmodule Helpers do
 
 	def do_sequence1_2(seed) do
 		history = Enum.reverse(seed)
-		[_hd | tail] = history
+		head = hd history
 
-		existing = tail
+		existing = Enum.slice(seed, 0..-2)
 			|> Enum.with_index
-			|> Enum.reduce(%{}, fn {nb, id}, acc -> Map.put(acc, nb, id + 1) end)
-		sequence1_2(length(seed) + 1, %{history: history, existing: existing})
+			|> Enum.reduce(%{}, fn {nb, id}, acc -> Map.put(acc, nb, id) end)
+		sequence2(%{history: head, existing: existing, index: length(seed) - 1, target: 2020})
 	end
 
 	def do_sequence2(seed) do
 		history = Enum.reverse(seed)
-		[_hd | tail] = history
+		head = hd history
 
-		existing = tail
-			|> Enum.reduce(%{}, fn {nb, id}, acc -> Map.put(acc, nb, id + 1) end)
-		sequence2(length(seed) + 1, %{history: history, existing: existing})
+		existing = Enum.slice(seed, 0..-2)
+			|> Enum.with_index
+			|> Enum.reduce(%{}, fn {nb, id}, acc -> Map.put(acc, nb, id) end)
+		sequence2(%{history: head, existing: existing, index: length(seed) - 1, target: 30000000})
 	end
 
 
