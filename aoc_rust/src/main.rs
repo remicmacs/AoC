@@ -1,14 +1,17 @@
 use std::env;
-use std::fs;
 use std::process;
 
-fn parse_cmdline_args() -> Result<String, &'static str> {
+use aoc_rust::*;
+
+fn parse_cmdline_args() -> Result<AoCInput, &'static str> {
     let args: Vec<String> = env::args().collect();
     let file_path: String;
+    let year: u32;
+    let day_nb: u32;
     match args.len() {
         // expected number of args
         4 => {
-            let year: u32 = match args[1].parse::<u32>() {
+            year = match args[1].parse::<u32>() {
                 Ok(number) => {
                     if number < 2022 && number > 2014 {
                         number
@@ -19,7 +22,7 @@ fn parse_cmdline_args() -> Result<String, &'static str> {
                 _ => return Err("Expected a number year !"),
             };
 
-            let day_nb: u32 = match args[2].parse::<u32>() {
+            day_nb = match args[2].parse::<u32>() {
                 Ok(number) => {
                     if number < 26 && number > 0 {
                         number
@@ -39,47 +42,23 @@ fn parse_cmdline_args() -> Result<String, &'static str> {
         }
     }
 
-    Ok(file_path)
-}
-
-fn final_floor(input: &str) -> isize {
-    let tokens: Vec<char> = input.chars().collect();
-    tokens.iter().fold(0, |acc, x| if *x == '(' { acc + 1 } else { acc - 1 }) as isize
-}
-
-fn first_basement_floor(input: &str) -> usize {
-    let tokens: Vec<char> = input.chars().collect();
-
-    let mut first_basement_floor: usize = 0;
-    let mut floor = 0;
-    for (i, token) in tokens.iter().enumerate() {
-        match token {
-            '(' => floor += 1,
-            ')' => floor -= 1,
-            _ => continue,
-        }
-        if first_basement_floor == 0 && floor < 0 {
-            first_basement_floor = i + 1;
-        }
-    }
-
-    first_basement_floor
+    Ok(AoCInput{year: year, day: day_nb, input: file_path})
 }
 
 fn main() {
-    let file_path: String;
-    match parse_cmdline_args() {
-        Ok(valid_str) => file_path = valid_str,
+    let input: AoCInput = match parse_cmdline_args() {
+        Ok(valid_struct) => valid_struct,
         Err(err_msg) => {
             println!("{err_msg}");
             process::exit(1);
         }
     };
 
-    println!("Opening file {file_path}");
-    let contents = fs::read_to_string(file_path).expect("Unexpected error while reading the file");
-
-    let final_floor = final_floor(&contents);
-    let first_basement_floor = first_basement_floor(&contents);
-    println!("{final_floor}\n{first_basement_floor}");
+    match solve_aoc(input) {
+        Ok(solution) => println!("{solution}"),
+        Err(err_msg) => {
+            println!("{err_msg}");
+            process::exit(1);
+        }
+    };
 }
