@@ -43,6 +43,66 @@ mod year_2015 {
 
             first_basement_floor
         }
+
+        #[cfg(test)]
+        mod tests {
+            use super::*;
+            #[test]
+            fn test_final_floor_1() {
+                assert_eq!(0, final_floor("(())"));
+            }
+
+            #[test]
+            fn test_final_floor_2() {
+                assert_eq!(0, final_floor("()()"));
+            }
+
+            #[test]
+            fn test_final_floor_3() {
+                assert_eq!(3, final_floor("((("));
+            }
+
+            #[test]
+            fn test_final_floor_4() {
+                assert_eq!(3, final_floor("(()(()("));
+            }
+
+            #[test]
+            fn test_final_floor_5() {
+                assert_eq!(3, final_floor("))((((("));
+            }
+
+            #[test]
+            fn test_final_floor_6() {
+                assert_eq!(-1, final_floor("())"));
+            }
+
+            #[test]
+            fn test_final_floor_7() {
+                assert_eq!(-1, final_floor("))("));
+            }
+
+            #[test]
+            fn test_final_floor_8() {
+                assert_eq!(-3, final_floor(")))"));
+            }
+
+            #[test]
+            fn test_final_floor_9() {
+                assert_eq!(-3, final_floor(")())())"));
+            }
+
+
+            #[test]
+            fn test_first_basement_floor_1() {
+                assert_eq!(1, first_basement_floor(")"));
+            }
+
+            #[test]
+            fn test_first_basement_floor_2() {
+                assert_eq!(5, first_basement_floor("()()))"));
+            }
+        }
     }
 
     pub mod day_2 {
