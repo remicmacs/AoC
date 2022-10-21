@@ -42,7 +42,11 @@ fn parse_cmdline_args() -> Result<AoCInput, &'static str> {
         }
     }
 
-    Ok(AoCInput{year: year, day: day_nb, input: file_path})
+    Ok(AoCInput {
+        year: year,
+        day: day_nb,
+        input: file_path,
+    })
 }
 
 fn main() {
