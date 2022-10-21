@@ -194,10 +194,119 @@ mod year_2015 {
             }
         }
     }
+
+    pub mod day_3 {
+        use std::collections::HashSet;
+        pub fn part1(input: &str) -> String {
+            let house_nb = how_many_houses_get_presents(input);
+            format!("{house_nb}")
+        }
+
+        pub fn part2(input: &str) -> String {
+            let house_nb = how_many_houses_get_presents_with_robot(input);
+            format!("{house_nb}")
+        }
+
+        #[derive(Clone, Copy, Hash, Eq, PartialEq, Debug)]
+        struct Position {
+            x: isize,
+            y: isize,
+        }
+
+        fn go_north(init_pos: &Position) -> Position {
+            Position{x: init_pos.x, y: init_pos.y + 1}
+        }
+
+        fn go_south(init_pos: &Position) -> Position {
+            Position{x: init_pos.x, y: init_pos.y - 1}
+        }
+
+        fn go_east(init_pos: &Position) -> Position {
+            Position{x: init_pos.x + 1, y: init_pos.y}
+        }
+
+        fn go_west(init_pos: &Position) -> Position {
+            Position{x: init_pos.x - 1, y: init_pos.y}
+        }
+
+        fn how_many_houses_get_presents(directions: &str) -> usize {
+            let init_pos = Position{x:0, y:0};
+            let mut positions = HashSet::from([init_pos]);
+            let mut curr_pos = init_pos;
+            for direction in directions.trim().chars() {
+                curr_pos = get_new_pos(direction, &curr_pos);
+                positions.insert(curr_pos);
+            }
+            positions.len()
+        }
+
+        fn get_new_pos(direction: char, curr_pos: &Position) -> Position {
+            match direction {
+                '^' => go_north(curr_pos),
+                'v' => go_south(curr_pos),
+                '>' => go_east(curr_pos),
+                '<' => go_west(curr_pos),
+                _ => panic!("should be unreachable"),
+            }
+        }
+
+        fn how_many_houses_get_presents_with_robot(directions: &str) -> usize {
+            let init_pos = Position{x:0, y:0};
+            let mut santa_positions = HashSet::from([init_pos]);
+            let mut robot_positions = HashSet::from([init_pos]);
+            let mut santa_curr_pos = init_pos;
+            let mut robot_curr_pos = init_pos;
+            for (i, direction) in directions.trim().chars().enumerate() {
+                if i % 2 == 0 {
+                    santa_curr_pos = get_new_pos(direction, &santa_curr_pos);
+                    santa_positions.insert(santa_curr_pos);
+                } else {
+                    robot_curr_pos = get_new_pos(direction, &robot_curr_pos);
+                    robot_positions.insert(robot_curr_pos);
+                }
+            }
+
+            let all_pos: HashSet<_> = robot_positions.union(&santa_positions).collect();
+            all_pos.len()
+        }
+
+        #[cfg(test)]
+        mod tests {
+            use super::*;
+            #[test]
+            fn test_how_many_houses_get_presents_1() {
+                assert_eq!(2, how_many_houses_get_presents(">"));
+            }
+
+            #[test]
+            fn test_how_many_houses_get_presents_2() {
+                assert_eq!(4, how_many_houses_get_presents("^>v<"));
+            }
+
+            #[test]
+            fn test_how_many_houses_get_presents_3() {
+                assert_eq!(2, how_many_houses_get_presents("^v^v^v^v^v"));
+            }
+
+            #[test]
+            fn test_how_many_houses_get_presents_with_robot_1() {
+                assert_eq!(3, how_many_houses_get_presents_with_robot("^v"));
+            }
+
+            #[test]
+            fn test_how_many_houses_get_presents_with_robot_2() {
+                assert_eq!(3, how_many_houses_get_presents_with_robot("^>v<"));
+            }
+
+            #[test]
+            fn test_how_many_houses_get_presents_with_robot_3() {
+                assert_eq!(11, how_many_houses_get_presents_with_robot("^v^v^v^v^v"));
+            }
+        }
+    }
 }
 
-use crate::year_2015::day_1;
-use crate::year_2015::day_2;
+use crate::year_2015::*;
 pub fn solve_aoc(aoc: AoCInput) -> Result<String, String> {
     match aoc.year {
         2015 => match aoc.day {
@@ -206,11 +315,17 @@ pub fn solve_aoc(aoc: AoCInput) -> Result<String, String> {
                 let part1_solution = day_1::part1(&input);
                 let part2_solution = day_1::part2(&input);
                 Ok(format!("{part1_solution}\n{part2_solution}"))
-            }
+            },
             2 => {
                 let input = get_input_from_file(&aoc);
                 let part1_solution = day_2::part1(&input);
                 let part2_solution = day_2::part2(&input);
+                Ok(format!("{part1_solution}\n{part2_solution}"))
+            },
+            3 => {
+                let input = get_input_from_file(&aoc);
+                let part1_solution = day_3::part1(&input);
+                let part2_solution = day_3::part2(&input);
                 Ok(format!("{part1_solution}\n{part2_solution}"))
             }
             _ => Err(format!(
