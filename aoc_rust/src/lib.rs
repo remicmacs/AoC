@@ -304,6 +304,47 @@ mod year_2015 {
             }
         }
     }
+
+    pub mod day_4 {
+        pub fn part1(input: &str) -> String {
+            let res = find_md5_hash_with_x_leading_zeroes(5, input.trim());
+            format!("{res}")
+        }
+
+        pub fn part2(input: &str) -> String {
+            let res = find_md5_hash_with_x_leading_zeroes(6, input.trim());
+            format!("{res}")
+        }
+
+        fn find_md5_hash_with_x_leading_zeroes(zeroes_nb: usize, input: &str) -> usize {
+            use regex::Regex;
+            let mut int_candidate = 0;
+            let configurable_regex_str = format!("^0{{{}}}.*$", zeroes_nb);
+            let re = Regex::new(&configurable_regex_str).unwrap();
+            loop {
+                let str_candidate = format!("{input}{int_candidate}");
+                let digest = md5::compute(str_candidate);
+                let hex_string = format!("{:x}", digest);
+                if re.is_match(&hex_string) { return int_candidate }
+                int_candidate += 1;
+            }
+                    }
+        #[cfg(test)]
+        mod tests {
+            use super::*;
+            #[test]
+            fn test_find_md5_hash_with_x_leading_zeroes_1() {
+                let res = find_md5_hash_with_x_leading_zeroes(5, "abcdef");
+                assert_eq!(res, 609043);
+            }
+
+            #[test]
+            fn test_find_md5_hash_with_x_leading_zeroes_2() {
+                let res = find_md5_hash_with_x_leading_zeroes(5, "pqrstuv");
+                assert_eq!(res, 1048970);
+            }
+        }
+    }
 }
 
 use crate::year_2015::*;
@@ -326,6 +367,12 @@ pub fn solve_aoc(aoc: AoCInput) -> Result<String, String> {
                 let input = get_input_from_file(&aoc);
                 let part1_solution = day_3::part1(&input);
                 let part2_solution = day_3::part2(&input);
+                Ok(format!("{part1_solution}\n{part2_solution}"))
+            },
+            4 => {
+                let input = get_input_from_file(&aoc);
+                let part1_solution = day_4::part1(&input);
+                let part2_solution = day_4::part2(&input);
                 Ok(format!("{part1_solution}\n{part2_solution}"))
             }
             _ => Err(format!(
