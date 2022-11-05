@@ -92,7 +92,6 @@ mod year_2015 {
                 assert_eq!(-3, final_floor(")())())"));
             }
 
-
             #[test]
             fn test_first_basement_floor_1() {
                 assert_eq!(1, first_basement_floor(")"));
@@ -214,23 +213,35 @@ mod year_2015 {
         }
 
         fn go_north(init_pos: &Position) -> Position {
-            Position{x: init_pos.x, y: init_pos.y + 1}
+            Position {
+                x: init_pos.x,
+                y: init_pos.y + 1,
+            }
         }
 
         fn go_south(init_pos: &Position) -> Position {
-            Position{x: init_pos.x, y: init_pos.y - 1}
+            Position {
+                x: init_pos.x,
+                y: init_pos.y - 1,
+            }
         }
 
         fn go_east(init_pos: &Position) -> Position {
-            Position{x: init_pos.x + 1, y: init_pos.y}
+            Position {
+                x: init_pos.x + 1,
+                y: init_pos.y,
+            }
         }
 
         fn go_west(init_pos: &Position) -> Position {
-            Position{x: init_pos.x - 1, y: init_pos.y}
+            Position {
+                x: init_pos.x - 1,
+                y: init_pos.y,
+            }
         }
 
         fn how_many_houses_get_presents(directions: &str) -> usize {
-            let init_pos = Position{x:0, y:0};
+            let init_pos = Position { x: 0, y: 0 };
             let mut positions = HashSet::from([init_pos]);
             let mut curr_pos = init_pos;
             for direction in directions.trim().chars() {
@@ -251,7 +262,7 @@ mod year_2015 {
         }
 
         fn how_many_houses_get_presents_with_robot(directions: &str) -> usize {
-            let init_pos = Position{x:0, y:0};
+            let init_pos = Position { x: 0, y: 0 };
             let mut santa_positions = HashSet::from([init_pos]);
             let mut robot_positions = HashSet::from([init_pos]);
             let mut santa_curr_pos = init_pos;
@@ -325,10 +336,13 @@ mod year_2015 {
                 let str_candidate = format!("{input}{int_candidate}");
                 let digest = md5::compute(str_candidate);
                 let hex_string = format!("{:x}", digest);
-                if re.is_match(&hex_string) { return int_candidate }
+                if re.is_match(&hex_string) {
+                    return int_candidate;
+                }
                 int_candidate += 1;
             }
-                    }
+        }
+
         #[cfg(test)]
         mod tests {
             use super::*;
@@ -345,6 +359,94 @@ mod year_2015 {
             }
         }
     }
+
+    pub mod day_5 {
+        pub fn part1(input: &str) -> String {
+            let nice_str_nb = input.lines().filter(|line| is_nice(line)).count();
+            format!("{nice_str_nb}")
+        }
+
+        pub fn part2(input: &str) -> String {
+            format!("Not implemented yet")
+        }
+
+        fn is_nice(s: &str) -> bool {
+            use lazy_static::lazy_static;
+            use regex::Regex;
+            lazy_static! {
+                static ref RE_VOWELS: Regex =
+                    Regex::new(r"^.*[aeiou].*[aeiou].*[aeiou].*$").unwrap();
+                static ref RE_FORBIDDEN: Regex = Regex::new(r"^.*(ab|cd|pq|xy).*$").unwrap();
+            }
+
+            (!RE_FORBIDDEN.is_match(s)) && RE_VOWELS.is_match(s) && contains_double_char(s)
+        }
+
+        fn contains_double_char(s: &str) -> bool {
+            let mut cur_ch = '\0';
+            for ch in s.chars() {
+                if ch == cur_ch {
+                    return true;
+                }
+                cur_ch = ch;
+            }
+            false
+        }
+
+        #[cfg(test)]
+        mod tests {
+            use super::*;
+            #[test]
+            fn test_is_nice_1() {
+                assert!(is_nice("ugknbfddgicrmopn"));
+            }
+
+            #[test]
+            fn test_is_nice_2() {
+                assert!(is_nice("aaa"));
+            }
+
+            #[test]
+            fn test_is_naughty_1() {
+                assert!(!is_nice("jchzalrnumimnmhp"));
+            }
+
+            #[test]
+            fn test_is_naughty_2() {
+                assert!(!is_nice("haegwjzuvuyypxyu"));
+            }
+
+            #[test]
+            fn test_is_naughty_3() {
+                assert!(!is_nice("dvszwmarrgswjxmb"));
+            }
+
+            #[test]
+            fn test_contains_double_char_1() {
+                assert!(contains_double_char("ugknbfddgicrmopn"));
+            }
+
+            #[test]
+            fn test_contains_double_char_2() {
+                assert!(contains_double_char("aaa"));
+            }
+
+            #[test]
+            fn test_contains_double_char_3() {
+                assert!(!contains_double_char("jchzalrnumimnmhp"));
+            }
+
+            #[test]
+            fn test_contains_double_char_4() {
+                assert!(contains_double_char("haegwjzuvuyypxyu"));
+            }
+
+            #[test]
+            fn test_contains_double_char_5() {
+                assert!(contains_double_char("dvszwmarrgswjxmb"));
+            }
+        }
+    }
 }
 
 use crate::year_2015::*;
@@ -356,23 +458,29 @@ pub fn solve_aoc(aoc: AoCInput) -> Result<String, String> {
                 let part1_solution = day_1::part1(&input);
                 let part2_solution = day_1::part2(&input);
                 Ok(format!("{part1_solution}\n{part2_solution}"))
-            },
+            }
             2 => {
                 let input = get_input_from_file(&aoc);
                 let part1_solution = day_2::part1(&input);
                 let part2_solution = day_2::part2(&input);
                 Ok(format!("{part1_solution}\n{part2_solution}"))
-            },
+            }
             3 => {
                 let input = get_input_from_file(&aoc);
                 let part1_solution = day_3::part1(&input);
                 let part2_solution = day_3::part2(&input);
                 Ok(format!("{part1_solution}\n{part2_solution}"))
-            },
+            }
             4 => {
                 let input = get_input_from_file(&aoc);
                 let part1_solution = day_4::part1(&input);
                 let part2_solution = day_4::part2(&input);
+                Ok(format!("{part1_solution}\n{part2_solution}"))
+            }
+            5 => {
+                let input = get_input_from_file(&aoc);
+                let part1_solution = day_5::part1(&input);
+                let part2_solution = day_5::part2(&input);
                 Ok(format!("{part1_solution}\n{part2_solution}"))
             }
             _ => Err(format!(
