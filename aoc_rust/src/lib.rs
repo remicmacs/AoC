@@ -367,7 +367,8 @@ mod year_2015 {
         }
 
         pub fn part2(input: &str) -> String {
-            format!("Not implemented yet")
+            let nice_str_nb = input.lines().filter(|line| is_nice_new(line)).count();
+            format!("{nice_str_nb}")
         }
 
         fn is_nice(s: &str) -> bool {
@@ -382,12 +383,65 @@ mod year_2015 {
             (!RE_FORBIDDEN.is_match(s)) && RE_VOWELS.is_match(s) && contains_double_char(s)
         }
 
+        fn is_nice_new(s: &str) -> bool {
+            contains_double_pair(s) && contains_repeating_letter_with_separator(s)
+        }
+
         fn contains_double_char(s: &str) -> bool {
             let mut cur_ch = '\0';
             for ch in s.chars() {
                 if ch == cur_ch {
                     return true;
                 }
+                cur_ch = ch;
+            }
+            false
+        }
+
+        fn contains_double_pair(s: &str) -> bool {
+            use std::collections::HashMap;
+            let bytes = s.as_bytes();
+            let mut map: HashMap<String, usize> = HashMap::<String, usize>::new();
+            let pairs = bytes.chunks_exact(2);
+            for pair in pairs {
+                *map.entry(std::str::from_utf8(pair).unwrap().to_string())
+                    .or_default() += 1;
+            }
+
+            let off_by_one_bytes = &bytes[1..];
+            let off_by_one_pairs = off_by_one_bytes.chunks_exact(2);
+            for pair in off_by_one_pairs {
+                *map.entry(std::str::from_utf8(pair).unwrap().to_string())
+                    .or_default() += 1;
+            }
+            if !map.clone().into_values().any(|x| x > 1) {
+                return false;
+            }
+
+            let filtered_map: HashMap<&String, &usize> =
+                map.iter().filter(|(_k, v)| **v > 1).collect();
+
+            // For each string in the double pairs that where found
+            for pair_str in filtered_map.into_keys() {
+                // test if overlaps by : finding all matches of the string and
+                // see if indices overlaps
+                let left_found = s.find(pair_str).unwrap();
+                let right_found = s.rfind(pair_str).unwrap();
+                if right_found - left_found > 1 {
+                    return true;
+                }
+            }
+            false
+        }
+
+        fn contains_repeating_letter_with_separator(s: &str) -> bool {
+            let mut prev_char = '\0';
+            let mut cur_ch = '\0';
+            for ch in s.chars() {
+                if ch == prev_char {
+                    return true;
+                }
+                prev_char = cur_ch;
                 cur_ch = ch;
             }
             false
@@ -444,6 +498,65 @@ mod year_2015 {
             #[test]
             fn test_contains_double_char_5() {
                 assert!(contains_double_char("dvszwmarrgswjxmb"));
+            }
+
+            #[test]
+            fn test_is_nice_new_1() {
+                assert!(is_nice_new("qjhvhtzxzqqjkmpb"));
+            }
+
+            #[test]
+            fn test_is_nice_new_2() {
+                assert!(is_nice_new("xxyxx"));
+            }
+
+            #[test]
+            fn test_is_naughty_new_1() {
+                assert!(!is_nice_new("uurcxstgmygtbstg"));
+            }
+
+            #[test]
+            fn test_is_naughty_new_2() {
+                assert!(!is_nice_new("ieodomkazucvgmuy"));
+            }
+
+            #[test]
+            fn test_contains_double_pair_1() {
+                assert!(!contains_double_pair("ieodomkazucvgmuy"));
+            }
+
+            #[test]
+            fn test_contains_double_pair_2() {
+                assert!(contains_double_pair("xxyxx"));
+            }
+
+            #[test]
+            fn test_contains_double_pair_3() {
+                assert!(!contains_double_pair("bbb"));
+            }
+
+            #[test]
+            fn test_contains_repeating_letter_with_separator_1() {
+                assert!(contains_repeating_letter_with_separator("xxyxx"));
+            }
+
+            #[test]
+            fn test_contains_repeating_letter_with_separator_2() {
+                assert!(contains_repeating_letter_with_separator("aaa"));
+            }
+
+            #[test]
+            fn test_contains_repeating_letter_with_separator_3() {
+                assert!(contains_repeating_letter_with_separator("xyx"));
+            }
+
+            #[test]
+            fn test_contains_repeating_letter_with_separator_4() {
+                assert!(contains_repeating_letter_with_separator("abcdefeghi"));
+            }
+            #[test]
+            fn test_contains_repeating_letter_with_separator_5() {
+                assert!(!contains_repeating_letter_with_separator("xyz"));
             }
         }
     }
