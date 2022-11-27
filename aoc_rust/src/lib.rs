@@ -616,17 +616,58 @@ mod year_2015 {
         }
 
         pub fn part2(input: &str) -> String {
-            format!("Not implemented yet")
-        }
+            use regex::Regex;
+            use std::str::FromStr;
+            let toggle_re = Regex::new(r"^toggle").unwrap();
+            let turn_on_re = Regex::new(r"^turn on").unwrap();
+            let coordinates_re = Regex::new(r"\d{1,3},\d{1,3}").unwrap();
+            let mut grid = vec![vec![0; 1000]; 1000];
+            for line in input.lines() {
+                let splitted: Vec<&str> = line.split(" through ").collect();
+                let first_part = splitted[0];
+                let coords_start_candidates = coordinates_re.captures(first_part).unwrap();
+                let coords_start = &coords_start_candidates[0];
+                let second_part = splitted[1];
+                let coords_end_candidates = coordinates_re.captures(second_part).unwrap();
+                let coords_end = &coords_end_candidates[0];
 
-        fn turn_on(
-            grid: &Vec<Vec<bool>>,
-            x_start: usize,
-            y_start: usize,
-            x_stop: usize,
-            y_stop: usize,
-        ) {
-            ()
+                let splitted_start: Vec<&str> = coords_start.split(",").collect();
+                let splitted_end: Vec<&str> = coords_end.split(",").collect();
+
+                let x_start = usize::from_str(&splitted_start[0]).unwrap();
+                let y_start = usize::from_str(&splitted_start[1]).unwrap();
+                let x_end = usize::from_str(&splitted_end[0]).unwrap();
+                let y_end = usize::from_str(&splitted_end[1]).unwrap();
+
+                if toggle_re.is_match(line) {
+                    // Toggle
+                    for i in x_start..=x_end {
+                        for j in y_start..=y_end {
+                            grid[i][j] += 2;
+                        }
+                    }
+                } else if turn_on_re.is_match(line) {
+                    // Turn on
+                    for i in x_start..=x_end {
+                        for j in y_start..=y_end {
+                            grid[i][j] += 1;
+                        }
+                    }
+                } else {
+                    // Turn off
+                    for i in x_start..=x_end {
+                        for j in y_start..=y_end {
+                            if grid[i][j] > 0 {
+                                grid[i][j] -= 1;
+                            }
+                        }
+                    }
+                }
+            }
+
+            let flat: Vec<usize> = grid.into_iter().flatten().collect();
+            let sum: usize = flat.iter().sum();
+            format!("{sum}")
         }
 
         #[cfg(test)]
