@@ -684,7 +684,15 @@ mod year_2022 {
         }
 
         pub fn part2(input: &str) -> String {
-            format!("Not implemented yet")
+            let mut list = input
+                .split("\n\n")
+                .map(|x| compute_elf_calories(x))
+                .collect::<Vec<usize>>();
+
+            list.sort();
+            list.reverse();
+            let tot = list.iter().take(3).sum::<usize>();
+            format!("{tot}")
         }
 
         fn compute_elf_calories(input: &str) -> usize {
