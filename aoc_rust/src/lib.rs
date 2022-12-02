@@ -669,56 +669,105 @@ mod year_2015 {
             let sum: usize = flat.iter().sum();
             format!("{sum}")
         }
+    }
+}
+
+mod year_2022 {
+    pub mod day_1 {
+        pub fn part1(input: &str) -> String {
+            let most = input
+                .split("\n\n")
+                .map(|x| compute_elf_calories(x))
+                .max()
+                .unwrap();
+            format!("{most}")
+        }
+
+        pub fn part2(input: &str) -> String {
+            format!("Not implemented yet")
+        }
+
+        fn compute_elf_calories(input: &str) -> usize {
+            use std::str::FromStr;
+            input.lines().map(|x| usize::from_str(x).unwrap()).sum()
+        }
 
         #[cfg(test)]
         mod tests {
             use super::*;
             #[test]
-            fn test_empty() {
-                panic!("Nothing is done yet !");
+            fn compute_elf_calories_test_1() {
+                assert_eq!(compute_elf_calories("1000\n2000\n3000"), 6000);
+            }
+            #[test]
+            fn compute_elf_calories_test_2() {
+                assert_eq!(compute_elf_calories("4000"), 4000);
+            }
+            #[test]
+            fn compute_elf_calories_test_3() {
+                assert_eq!(compute_elf_calories("5000\n6000"), 11000);
+            }
+            #[test]
+            fn compute_elf_calories_test_4() {
+                assert_eq!(compute_elf_calories("7000\n8000\n9000"), 24000);
+            }
+            #[test]
+            fn compute_elf_calories_test_5() {
+                assert_eq!(compute_elf_calories("10000"), 10000);
             }
         }
     }
 }
 
-use crate::year_2015::*;
 pub fn solve_aoc(aoc: AoCInput) -> Result<String, String> {
     match aoc.year {
         2015 => match aoc.day {
             1 => {
                 let input = get_input_from_file(&aoc);
-                let part1_solution = day_1::part1(&input);
-                let part2_solution = day_1::part2(&input);
+                let part1_solution = year_2015::day_1::part1(&input);
+                let part2_solution = year_2015::day_1::part2(&input);
                 Ok(format!("{part1_solution}\n{part2_solution}"))
             }
             2 => {
                 let input = get_input_from_file(&aoc);
-                let part1_solution = day_2::part1(&input);
-                let part2_solution = day_2::part2(&input);
+                let part1_solution = year_2015::day_2::part1(&input);
+                let part2_solution = year_2015::day_2::part2(&input);
                 Ok(format!("{part1_solution}\n{part2_solution}"))
             }
             3 => {
                 let input = get_input_from_file(&aoc);
-                let part1_solution = day_3::part1(&input);
-                let part2_solution = day_3::part2(&input);
+                let part1_solution = year_2015::day_3::part1(&input);
+                let part2_solution = year_2015::day_3::part2(&input);
                 Ok(format!("{part1_solution}\n{part2_solution}"))
             }
             4 => {
                 let input = get_input_from_file(&aoc);
-                let part1_solution = day_4::part1(&input);
-                let part2_solution = day_4::part2(&input);
+                let part1_solution = year_2015::day_4::part1(&input);
+                let part2_solution = year_2015::day_4::part2(&input);
                 Ok(format!("{part1_solution}\n{part2_solution}"))
             }
             5 => {
                 let input = get_input_from_file(&aoc);
-                let part1_solution = day_5::part1(&input);
-                let part2_solution = day_5::part2(&input);
+                let part1_solution = year_2015::day_5::part1(&input);
+                let part2_solution = year_2015::day_5::part2(&input);
                 Ok(format!("{part1_solution}\n{part2_solution}"))
             }
             6 => {
                 let input = get_input_from_file(&aoc);
-                let part1_solution = day_6::part1(&input);
-                let part2_solution = day_6::part2(&input);
+                let part1_solution = year_2015::day_6::part1(&input);
+                let part2_solution = year_2015::day_6::part2(&input);
+                Ok(format!("{part1_solution}\n{part2_solution}"))
+            }
+            _ => Err(format!(
+                "Day {} for year {} not implemented yet",
+                aoc.day, aoc.year
+            )),
+        },
+        2022 => match aoc.day {
+            1 => {
+                let input = get_input_from_file(&aoc);
+                let part1_solution = year_2022::day_1::part1(&input);
+                let part2_solution = year_2022::day_1::part2(&input);
                 Ok(format!("{part1_solution}\n{part2_solution}"))
             }
             _ => Err(format!(

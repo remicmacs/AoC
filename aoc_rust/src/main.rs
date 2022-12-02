@@ -13,10 +13,10 @@ fn parse_cmdline_args() -> Result<AoCInput, &'static str> {
         4 => {
             year = match args[1].parse::<u32>() {
                 Ok(number) => {
-                    if number < 2022 && number > 2014 {
+                    if number < 2023 && number > 2014 {
                         number
                     } else {
-                        return Err("Please chose a year in [2015-2021] range");
+                        return Err("Please chose a year in [2015-2022] range");
                     }
                 }
                 _ => return Err("Expected a number year !"),
