@@ -695,8 +695,7 @@ mod year_2022 {
         }
 
         fn compute_elf_calories(input: &str) -> usize {
-            input.lines().map(|x| x.parse::<usize>().unwrap_or(0))
-                .sum()
+            input.lines().map(|x| x.parse::<usize>().unwrap_or(0)).sum()
         }
 
         #[cfg(test)]
@@ -728,19 +727,16 @@ mod year_2022 {
     pub mod day_2 {
 
         pub fn part1(input: &str) -> String {
-            let tot: usize = input
-                .lines()
-                .map(|line| calculate_round(line))
-                .sum();
+            let tot: usize = input.lines().map(|line| calculate_round_part1(line)).sum();
             format!("{tot}")
         }
 
         pub fn part2(input: &str) -> String {
-            format!("Not implemented")
+            let tot: usize = input.lines().map(|line| calculate_round_part2(line)).sum();
+            format!("{tot}")
         }
 
-        fn resolve_round(adversary: &str, me: &str) -> usize 
-        {
+        fn resolve_round_part1(adversary: &str, me: &str) -> usize {
             match (adversary, me) {
                 ("A", "X") => 3,
                 ("A", "Y") => 6,
@@ -755,20 +751,53 @@ mod year_2022 {
             }
         }
 
-        fn calculate_round(input: &str) -> usize {
+        fn calculate_round_part1(input: &str) -> usize {
             use itertools::Itertools;
             input
                 .split_terminator(" ")
                 .collect_tuple()
                 .map(|(adversary, me)| {
-                    let result = resolve_round(adversary, me);
+                    let result = resolve_round_part1(adversary, me);
                     match me {
                         "X" => result + 1,
                         "Y" => result + 2,
                         "Z" => result + 3,
                         _ => 0,
                     }
-                }).unwrap_or(0)
+                })
+                .unwrap_or(0)
+        }
+
+        fn resolve_round_part2(adversary: &str, me: &str) -> usize {
+            match (adversary, me) {
+                ("A", "X") => 3,
+                ("A", "Y") => 1,
+                ("A", "Z") => 2,
+                ("B", "X") => 1,
+                ("B", "Y") => 2,
+                ("B", "Z") => 3,
+                ("C", "X") => 2,
+                ("C", "Y") => 3,
+                ("C", "Z") => 1,
+                _ => 0,
+            }
+        }
+
+        fn calculate_round_part2(input: &str) -> usize {
+            use itertools::Itertools;
+            input
+                .split_terminator(" ")
+                .collect_tuple()
+                .map(|(adversary, me)| {
+                    let result = resolve_round_part2(adversary, me);
+                    match me {
+                        "X" => result + 0,
+                        "Y" => result + 3,
+                        "Z" => result + 6,
+                        _ => 0,
+                    }
+                })
+                .unwrap_or(0)
         }
 
         #[cfg(test)]
@@ -832,7 +861,7 @@ pub fn solve_aoc(aoc: AoCInput) -> Result<String, String> {
                 let part1_solution = year_2022::day_1::part1(&input);
                 let part2_solution = year_2022::day_1::part2(&input);
                 Ok(format!("{part1_solution}\n{part2_solution}"))
-            },
+            }
             2 => {
                 let input = get_input_from_file(&aoc);
                 let part1_solution = year_2022::day_2::part1(&input);
