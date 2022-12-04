@@ -805,6 +805,7 @@ mod year_2022 {
 
         use std::str::FromStr;
         use color_eyre;
+        use std::collections::HashSet;
 
         #[derive(Debug, Clone, Copy, Eq, Hash, PartialEq)]
         struct RucksackItem {
@@ -861,7 +862,6 @@ mod year_2022 {
         }
 
         fn find_rucksack_double(rucksack: Rucksack) -> RucksackItem {
-            use std::collections::HashSet;
             let mut first_half: HashSet<RucksackItem> = HashSet::new();
             let mut second_half: HashSet<RucksackItem> = HashSet::new();
 
@@ -877,17 +877,32 @@ mod year_2022 {
                 }
             }
 
-            let first_half = dbg!(first_half);
-            let second_half = dbg!(second_half);
+            let first_half = first_half;
+            let second_half = second_half;
 
             let inter = first_half.intersection(&second_half).collect::<Vec<&RucksackItem>>();
-            return *dbg!(inter)[0];
+            return *inter[0];
         }
 
+        fn find_rucksack_group_badge(group: Vec<Rucksack>) -> RucksackItem {
+            let first_rucksack = group[0].clone();
+            let second_rucksack = group[1].clone();
+            let third_rucksack = group[2].clone();
+
+            let first_set: HashSet<&RucksackItem> = first_rucksack.items.iter().collect();
+            let second_set: HashSet<&RucksackItem> = second_rucksack.items.iter().collect();
+            let third_set: HashSet<&RucksackItem> = third_rucksack.items.iter().collect();
+            // let group_first_second = dbg!(&first_set & &second_set);
+            // let group_second_third = dbg!(&second_set & &third_set);
+            // let group_first_third = dbg!(&first_set & &third_set);
+            let intermediate_set: HashSet<&RucksackItem> = &(&first_set & &second_set) & &third_set;
+            // let intermediate_set = dbg!(intermediate_set);
+            return **intermediate_set.iter().next().expect("Puzzle definition assures there will always be a common intersection");
+        }
         pub fn part1(input: &str) -> String {
             let rucksack_doubles: Vec<RucksackItem> = input
                 .lines()
-                .map(|rucksack_str| dbg!(find_rucksack_double(Rucksack::from_str(rucksack_str).unwrap())))
+                .map(|rucksack_str| find_rucksack_double(Rucksack::from_str(rucksack_str).unwrap()))
                 .collect();
             let tot: u64 = rucksack_doubles.iter()
                 .map(|rucksack_double| rucksack_double.value as u64)
@@ -896,7 +911,22 @@ mod year_2022 {
         }
 
         pub fn part2(input: &str) -> String {
-            format!("Nothing, but part 2")
+            use itertools::Itertools;
+            let mut commons: Vec<RucksackItem> = Vec::new();
+            for chunk in &input.lines().chunks(3) {
+                let mut group: Vec<Rucksack> = Vec::new();
+                for line in chunk {
+                    let ruck: Rucksack = Rucksack::from_str(line).unwrap();
+                    group.push(ruck);
+                }
+                let common: RucksackItem = find_rucksack_group_badge(group);
+                commons.push(common);
+            }
+            let tot: u64 = commons
+                .iter()
+                .map(|item| item.value as u64)
+                .sum();
+            format!("{tot}")
         }
     }
 }
