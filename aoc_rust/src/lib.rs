@@ -799,14 +799,104 @@ mod year_2022 {
                 })
                 .unwrap_or(0)
         }
+    }
 
-        #[cfg(test)]
-        mod tests {
-            use super::*;
-            #[test]
-            fn nothing() {
-                panic!("at the disco");
+    pub mod day_3 {
+
+        use std::str::FromStr;
+        use color_eyre;
+
+        #[derive(Debug, Clone, Copy, Eq, Hash, PartialEq)]
+        struct RucksackItem {
+            value: u8,
+            item_type: char,
+        }
+
+        #[derive(Debug, Clone)]
+        struct Rucksack {
+            items: Vec<RucksackItem>
+        }
+
+        impl FromStr for Rucksack {
+            type Err = color_eyre::Report;
+
+            fn from_str(s: &str) -> Result<Self, Self::Err> {
+                // Local helper function to convert the type of ite; to its value
+                fn char_value(c: char) -> Result<u8, String> {
+                    let mut value = 1;
+                    for character in b'a'..= b'z' {
+                        if c == char::from(character) {
+                            break;
+                        }
+                        value+=1;
+                    }
+                    if value <= 26 { return Ok(value); }
+
+                    for character in b'A'..= b'Z' {
+                        if c == char::from(character) {
+                            break;
+                        }
+                        value+=1;
+                    }
+                    if value <= 52 { return Ok(value); }
+                    Err(format!("Nope"))
+                }
+
+                let mut items: Vec<RucksackItem> = Vec::new();
+                for char in s.chars() {
+                    if let Ok(val) = char_value(char) {
+                        
+                        items.push(RucksackItem{
+                            value: val,
+                            item_type: char,
+                        });
+                    } else {
+                        return Err(color_eyre::eyre::eyre!("char value {char} is out of bounds [a-zA-Z]"));
+                    }
+                }
+                Ok(Rucksack{
+                    items
+                })
             }
+        }
+
+        fn find_rucksack_double(rucksack: Rucksack) -> RucksackItem {
+            use std::collections::HashSet;
+            let mut first_half: HashSet<RucksackItem> = HashSet::new();
+            let mut second_half: HashSet<RucksackItem> = HashSet::new();
+
+            let items = rucksack.items;
+            let items_nb = items.len();
+            let half_index = items_nb / 2;
+
+            for (i, item) in items.iter().enumerate() {
+                if i < half_index {
+                    first_half.insert(item.clone());
+                } else {
+                    second_half.insert(item.clone());
+                }
+            }
+
+            let first_half = dbg!(first_half);
+            let second_half = dbg!(second_half);
+
+            let inter = first_half.intersection(&second_half).collect::<Vec<&RucksackItem>>();
+            return *dbg!(inter)[0];
+        }
+
+        pub fn part1(input: &str) -> String {
+            let rucksack_doubles: Vec<RucksackItem> = input
+                .lines()
+                .map(|rucksack_str| dbg!(find_rucksack_double(Rucksack::from_str(rucksack_str).unwrap())))
+                .collect();
+            let tot: u64 = rucksack_doubles.iter()
+                .map(|rucksack_double| rucksack_double.value as u64)
+                .sum();
+            format!("{tot}")
+        }
+
+        pub fn part2(input: &str) -> String {
+            format!("Nothing, but part 2")
         }
     }
 }
@@ -866,6 +956,12 @@ pub fn solve_aoc(aoc: AoCInput) -> Result<String, String> {
                 let input = get_input_from_file(&aoc);
                 let part1_solution = year_2022::day_2::part1(&input);
                 let part2_solution = year_2022::day_2::part2(&input);
+                Ok(format!("{part1_solution}\n{part2_solution}"))
+            }
+            3 => {
+                let input = get_input_from_file(&aoc);
+                let part1_solution = year_2022::day_3::part1(&input);
+                let part2_solution = year_2022::day_3::part2(&input);
                 Ok(format!("{part1_solution}\n{part2_solution}"))
             }
             _ => Err(format!(
