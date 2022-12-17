@@ -1,5 +1,5 @@
 use color_eyre::eyre::Report;
-use std::str::FromStr;
+use std::{fmt, str::FromStr, thread, time};
 
 #[derive(Debug)]
 struct Step {
@@ -69,6 +69,38 @@ impl<'a> Stacks<'a> {
     }
 }
 
+impl fmt::Display for Stacks<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // Find max size in all stacks
+        let max_size = self.stacks.iter().map(|s| s.len()).max().unwrap();
+
+        let mut all_stacks_str = format!("");
+        // for max_size line
+        // from the top
+        for line_count in (1..=max_size).rev() {
+            let mut current_line = format!("");
+            // for each stack in order
+            for stack in self.stacks.iter() {
+                // format " [X] " (or "    " if no element) and append to current string
+                if let Some(element) = stack.get(line_count - 1) {
+                    current_line = format!("{current_line} [{element}] ");
+                } else {
+                    current_line = format!("{current_line}     ");
+                }
+            }
+            all_stacks_str = format!("{all_stacks_str}{current_line}\n");
+        }
+
+        // Append "  %d  " for number of stack
+        let mut indices_str = format!("");
+        for i in 1..=self.stacks.len() {
+            indices_str = format!("{indices_str}  {i}  ");
+        }
+        let stacks_str = format!("{all_stacks_str}\n{indices_str}");
+        write!(f, "{}", stacks_str)
+    }
+}
+
 fn main() -> color_eyre::Result<()> {
     color_eyre::install().unwrap();
 
@@ -102,13 +134,13 @@ fn main() -> color_eyre::Result<()> {
 
     let stack_lines: Vec<&str> = stacks.into_iter().rev().collect();
 
-    let mut stacks: Stacks = Stacks{
-        stacks: vec![vec![]; max_index]
+    let mut stacks: Stacks = Stacks {
+        stacks: vec![vec![]; max_index],
     };
     for line in stack_lines {
         for stack_index in 0..max_index {
             let element_index = 1 + (stack_index * 4);
-            let element = &line[element_index..element_index+1];
+            let element = &line[element_index..element_index + 1];
             if element != " " {
                 stacks.stacks[stack_index].push(&element);
             }
@@ -120,10 +152,16 @@ fn main() -> color_eyre::Result<()> {
         .map(|line| line.parse::<Step>())
         .collect();
 
+    println!("{}\n\n", stacks);
     for step in steps {
         let step = step?;
 
         stacks.process_step(step);
+        println!("{}\n\n", stacks);
+
+        let duration = time::Duration::from_millis(500);
+
+        thread::sleep(duration);
     }
     stacks.display_top();
 
