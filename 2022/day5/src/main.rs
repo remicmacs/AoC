@@ -43,22 +43,32 @@ impl FromStr for Step {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Stacks<'a> {
     stacks: Vec<Vec<&'a str>>,
 }
 
 impl<'a> Stacks<'a> {
-    fn process_step(&mut self, step: Step) {
+    fn process_step_9000(&mut self, step: &Step) {
+        let start_stack_id = step.start_stack_id - 1;
+        let end_stack_id = step.end_stack_id - 1;
         for _n in 1..=step.how_much {
-            let start_stack_id = step.start_stack_id - 1;
-            let end_stack_id = step.end_stack_id - 1;
             let top = self.stacks[start_stack_id]
                 .pop()
                 .expect("step instructions should be reliable");
             self.stacks[end_stack_id].push(top);
         }
     }
+
+    fn process_step_9001(&mut self, step: &Step) {
+        let start_stack_id = step.start_stack_id - 1;
+        let end_stack_id = step.end_stack_id - 1;
+        let stack_len = self.stacks[start_stack_id].len();
+        let final_len = stack_len - step.how_much;
+        let tail = self.stacks[start_stack_id].split_off(final_len);
+        self.stacks[end_stack_id].extend(tail);
+    }
+
     fn display_top(&self) {
         let mut result = format!("");
         for stack in &self.stacks {
@@ -96,7 +106,7 @@ impl fmt::Display for Stacks<'_> {
         for i in 1..=self.stacks.len() {
             indices_str = format!("{indices_str}  {i}  ");
         }
-        let stacks_str = format!("{all_stacks_str}\n{indices_str}");
+        let stacks_str = format!("{all_stacks_str}{indices_str}");
         write!(f, "{}", stacks_str)
     }
 }
@@ -147,21 +157,38 @@ fn main() -> color_eyre::Result<()> {
         }
     }
 
-    let steps: Vec<Result<Step, Report>> = instructions
+    let init_stacks = stacks.clone();
+
+    let steps: Vec<Step> = instructions
         .lines()
-        .map(|line| line.parse::<Step>())
+        .map(|line| line.parse::<Step>().expect("I'm expecting a step here"))
         .collect();
 
-    println!("{}\n\n", stacks);
-    for step in steps {
-        let step = step?;
+    // TODO: display and sleep only if argument is passed
+    // println!("{}\n\n", stacks);
+    for step in &steps[..] {
+        let step = step;
 
-        stacks.process_step(step);
-        println!("{}\n\n", stacks);
+        stacks.process_step_9000(step);
+        // println!("{step:#?}\n{stacks}\n\n");
 
-        let duration = time::Duration::from_millis(500);
+        // let duration = time::Duration::from_millis(100);
 
-        thread::sleep(duration);
+        // thread::sleep(duration);
+    }
+    stacks.display_top();
+
+    let mut stacks = init_stacks;
+    // println!("{stacks}\n\n");
+    for step in &steps[..] {
+        let step = step;
+
+        stacks.process_step_9001(step);
+        // println!("{step:#?}\n{stacks}\n\n");
+
+        // let duration = time::Duration::from_millis(100);
+
+        // thread::sleep(duration);
     }
     stacks.display_top();
 
